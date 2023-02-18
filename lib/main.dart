@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study_memo/screens/screenRoot.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,37 +15,38 @@ class MyApp extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
-  _MainPageState createState() => new _MainPageState();
+  _MainPageState createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  int _currrentIndex = 0;
-  // final List<PageRoot> _pageWidgets = [
-  //   const PageRoot(index: 1),
-  //   const PageRoot(index: 2),
-  //   const PageRoot(index: 3),
-  // ];
-  final List<PageRoot> _pageWidgets = [
-    test1(),
-    test2(),
-    test3(),
-  ];
+  int _currentIndex = 0;
+  // スクリーン共通カラー
+  ScreenColor screenColor = ScreenColor();
+  // スクリーンのリスト
+  ScreenList screenList = ScreenList();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
+        backgroundColor: screenColor.baseColor,
+        title: Text('Study_Memo'),
+        titleTextStyle: TextStyle(
+          fontSize: 25,
+          fontWeight: FontWeight.w800
+        )
       ),
-      body: _pageWidgets.elementAt(_currrentIndex),
+
+      body: screenList.screenLists.elementAt(_currentIndex),
+
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), backgroundColor: Colors.blueAccent, label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.photo_album), backgroundColor: Colors.blueAccent, label: 'Album'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), backgroundColor: Colors.blueAccent, label: 'Chat'),
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: const Icon(Icons.home), backgroundColor: screenColor.baseColor, label: 'Home'),
+          BottomNavigationBarItem(icon: const Icon(Icons.photo_album), backgroundColor: screenColor.baseColor, label: 'Album'),
+          BottomNavigationBarItem(icon: const Icon(Icons.chat), backgroundColor: screenColor.baseColor, label: 'Chat'),
         ],
-        currentIndex:  _currrentIndex,
-        fixedColor: Colors.red,
+        currentIndex: _currentIndex,
+        fixedColor: screenColor.subColor,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.shifting,
       ),
@@ -52,62 +54,10 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _onItemTapped(int index) => setState(() {
-    _currrentIndex = index;
+    _currentIndex = index;
   });
 }
 
-// class PageWidget extends StatelessWidget {
-//   final Color color;
-//   final String title;
-//   const PageWidget({super.key, required Color this.color, required String this.title});
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       color: color,
-//       child: Center(
-//         child: Text(
-//           title,
-//           style: TextStyle(
-//             fontSize: 40,
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-class PageRoot extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
-}
-
-class test1 extends PageRoot {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.red,
-    );
-  }
-}
-class test2 extends PageRoot {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.pink,
-    );
-  }
-}
-class test3 extends PageRoot {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.yellow,
-    );
-  }
-}
 
 
 
