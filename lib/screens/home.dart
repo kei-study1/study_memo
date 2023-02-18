@@ -21,59 +21,37 @@ class StudyTimerState extends State<StudyTimer> {
   // スクリーン共通カラー
   ScreenColor screenColor = ScreenColor();
   bool _buttonOn = false;
-
-  void _buttonPress() {
-    setState(() {
-      _buttonOn = !_buttonOn;
-    });
-    print(_buttonOn);
-  }
-
-  String _countTimer = '00:00:00';
-
-  Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: [
-          _buttonOn ? CountTimer(_countTimer) : Text(_countTimer),
-          FloatingActionButton(
-            onPressed: _buttonPress,
-            backgroundColor: screenColor.subColor,
-            child: Text(
-              '開始',
-              style: TextStyle(
-                fontSize: 20,
-              )
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class CountTimer extends StatefulWidget {
-  String countTimer;
-  CountTimer(String this.countTimer);
-  CountTimerState createState() => CountTimerState(countTimer);
-}
-
-class CountTimerState extends State<CountTimer> {
-  String countTimer;
+  // タイマー関係
+  late Timer _timer;
+  String countTimer = '00:00:00';
   int _seconds = 0;
   int _hour = 0;
   int _minute = 0;
   int _second = 0;
-  
-  CountTimerState(String this.countTimer);
 
-  @override
-  void initState() {
-    Timer.periodic(
-      Duration(seconds: 1),
-      _onTimer
-    );
-    super.initState();
+  void _buttonPress() {
+    setState(() {
+      _buttonOn = !_buttonOn;
+      if (_buttonOn) {
+          _timer = Timer.periodic(
+          Duration(seconds: 1),
+          _onTimer
+        );
+      } else {
+        _timer.cancel();
+      }
+    });
+    print(_buttonOn);
+  }
+  void _resetButtonPress() {
+    setState(() {
+      countTimer = '00:00:00';
+      _seconds = 0;
+      _buttonOn = false;
+      if (_timer.isActive) {
+        _timer.cancel();
+      }
+    });
   }
 
   void _onTimer(Timer timer) {
@@ -89,13 +67,49 @@ class CountTimerState extends State<CountTimer> {
     });
   }
 
-  @override
   Widget build(BuildContext context) {
-    return Text(
-      countTimer,
-      style: TextStyle(
-        fontSize: 60,
-        color: Colors.black,
+    return Center(
+      child: Column(
+        children: [
+          Container(
+            width: 300,
+            color: Colors.red,
+            child: Text(
+              countTimer,
+              style: TextStyle(
+                fontSize: 60,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              InkWell(
+                onTap: null,
+                onLongPress: _resetButtonPress,
+                child: FloatingActionButton(
+                  foregroundColor: Colors.red,
+                  backgroundColor: Colors.white,
+                  shape: CircleBorder(
+                    side: BorderSide(
+                      color: Colors.red,
+                      width: 3
+                    )
+                  ),
+                  splashColor: Colors.red,
+                  child: Icon(Icons.restart_alt_outlined, size: 40,),
+                  onPressed: (){},
+                ),
+              ),
+              FloatingActionButton(
+                onPressed: _buttonPress,
+                splashColor: _buttonOn ? screenColor.baseColor : screenColor.subColor,
+                backgroundColor: _buttonOn ? screenColor.subColor : screenColor.baseColor,
+                child: Icon(_buttonOn ? Icons.stop_circle_outlined : Icons.play_circle_outline, size: 40,),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
