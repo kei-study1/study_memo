@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -18,6 +20,15 @@ class StudyTimer extends StatefulWidget {
 }
 
 class StudyTimerState extends State<StudyTimer> {
+  // 日付
+  final DateTime _now = DateTime.now();
+  late final int _nowYear = _now.year;
+  late final int _nowMonth = _now.month;
+  late final int _nowDay = _now.day;
+  late final int _nowWeek = _now.weekday;
+  late final String _nowWeekWord = _weekday.elementAt(_nowWeek - 1);
+  final List<String> _weekday = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+  List<ListViewRow> dateTimeList = [];
   // スクリーン共通カラー
   ScreenColor screenColor = ScreenColor();
   bool _buttonOn = false;
@@ -41,6 +52,8 @@ class StudyTimerState extends State<StudyTimer> {
         _timer.cancel();
       }
     });
+    ListViewRow listViewRow = ListViewRow(DateTime.now(), _buttonOn);
+    dateTimeList.add(listViewRow);
     print(_buttonOn);
   }
   void _resetButtonPress() {
@@ -70,47 +83,168 @@ class StudyTimerState extends State<StudyTimer> {
   Widget build(BuildContext context) {
     return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 300,
-            color: Colors.red,
-            child: Text(
-              countTimer,
-              style: TextStyle(
-                fontSize: 60,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          Row(
+          Column(
             children: [
-              InkWell(
-                onTap: null,
-                onLongPress: _resetButtonPress,
-                child: FloatingActionButton(
-                  foregroundColor: Colors.red,
-                  backgroundColor: Colors.white,
-                  shape: CircleBorder(
-                    side: BorderSide(
-                      color: Colors.red,
-                      width: 3
-                    )
+              const SizedBox(height: 20,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  Text("$_nowYear",
+                    style: const TextStyle(
+                      fontSize: 20
+                    ),
                   ),
-                  splashColor: Colors.red,
-                  child: Icon(Icons.restart_alt_outlined, size: 40,),
-                  onPressed: (){},
+                  const SizedBox(width: 5,),
+                  Text("$_nowMonth" ".",
+                    style: const TextStyle(
+                      fontSize: 30
+                    ),
+                  ),
+                  Text("$_nowDay",
+                    style: const TextStyle(
+                      fontSize: 30
+                    ),
+                  ),
+                  const SizedBox(width: 5,),
+                  Text(_nowWeekWord,
+                    style: const TextStyle(
+                      fontSize: 20
+                    ),
+                  ),
+                ],
+              ),
+
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Container(),
+                  ),
+                  Expanded(
+                    flex: 6,
+                    child: Container(
+                      child: Column(
+                        children: <Widget>[
+                          Card(
+                            color: Colors.white,
+                            child: Container(
+                              padding: EdgeInsets.all(8),
+                              width: 284,
+                              child: Text(
+                                countTimer,
+                                style: TextStyle(
+                                  fontSize: 60,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 10,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              InkWell(
+                                onTap: null,
+                                onLongPress: _resetButtonPress,
+                                child: FloatingActionButton(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.red,
+                                  splashColor: Colors.white,
+                                  child: Icon(Icons.restart_alt_outlined, size: 40,),
+                                  onPressed: (){},
+                                ),
+                              ),
+                              FloatingActionButton(
+                                onPressed: _buttonPress,
+                                splashColor: _buttonOn ? screenColor.baseColor : screenColor.subColor,
+                                backgroundColor: _buttonOn ? screenColor.subColor : screenColor.baseColor,
+                                child: Icon(_buttonOn ? Icons.stop_circle_outlined : Icons.play_circle_outline, size: 40,),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 10,),
+
+              Container(
+                // color: Colors.red,
+                height: 150,
+                child: ListView.builder(
+                  itemBuilder: (BuildContext context, int index) {
+                    if (dateTimeList.length >= index + 1){
+                      return Row(
+                        children: <Widget> [
+                          Text(DateFormat('HH時mm分ss秒').format(dateTimeList.elementAt(index).getNowDateTime())),
+                          const SizedBox(width: 5,),
+                          Text(dateTimeList.elementAt(index).getButtonOn() ? "開始" : "終了")
+                        ]
+                      );
+                    }
+                  }
                 ),
               ),
-              FloatingActionButton(
-                onPressed: _buttonPress,
-                splashColor: _buttonOn ? screenColor.baseColor : screenColor.subColor,
-                backgroundColor: _buttonOn ? screenColor.subColor : screenColor.baseColor,
-                child: Icon(_buttonOn ? Icons.stop_circle_outlined : Icons.play_circle_outline, size: 40,),
+
+              const SizedBox(height: 10,),
+
+              Container(
+                color: Colors.white,
+                width: 300,
+                child: const TextField(
+                  maxLines: 3,
+                  decoration: InputDecoration(border: OutlineInputBorder()),
+                  // enabled: true,
+                  // maxLength: 10,
+                ),
               ),
+            ],
+          ),
+
+          Column(
+            children: [
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.only(left: 100, right: 100),
+                  backgroundColor: screenColor.baseColor,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))
+                ),
+                child: Text(
+                  '登録する',
+                  style: TextStyle(
+                    fontSize: 20
+                  ),
+                )
+              ),
+              const SizedBox(height: 10,)
             ],
           ),
         ],
       ),
     );
+  }
+}
+
+class ListViewRow {
+  late DateTime _nowDateTime;
+  late bool _buttonOn;
+
+  ListViewRow(this._nowDateTime, this._buttonOn);
+
+  DateTime getNowDateTime() {
+    return _nowDateTime;
+  }
+  bool getButtonOn() {
+    return _buttonOn;
   }
 }

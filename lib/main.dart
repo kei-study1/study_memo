@@ -28,6 +28,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: screenColor.baseColor2,
       appBar: AppBar(
         backgroundColor: screenColor.baseColor,
         title: Text('Study_Memo'),
