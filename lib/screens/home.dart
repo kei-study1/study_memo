@@ -28,7 +28,8 @@ class StudyTimerState extends State<StudyTimer> {
   late final int _nowWeek = _now.weekday;
   late final String _nowWeekWord = _weekday.elementAt(_nowWeek - 1);
   final List<String> _weekday = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
-  List<ListViewRow> dateTimeList = [];
+  List<ListViewRow> dateTimeStartList = [];
+  List<ListViewRow> dateTimeEndList = [];
   // スクリーン共通カラー
   ScreenColor screenColor = ScreenColor();
   bool _buttonOn = false;
@@ -43,17 +44,18 @@ class StudyTimerState extends State<StudyTimer> {
   void _buttonPress() {
     setState(() {
       _buttonOn = !_buttonOn;
+      ListViewRow listViewRow = ListViewRow(DateTime.now(), _buttonOn);
       if (_buttonOn) {
           _timer = Timer.periodic(
           Duration(seconds: 1),
           _onTimer
         );
+        dateTimeStartList.add(listViewRow);
       } else {
         _timer.cancel();
+        dateTimeEndList.add(listViewRow);
       }
     });
-    ListViewRow listViewRow = ListViewRow(DateTime.now(), _buttonOn);
-    dateTimeList.add(listViewRow);
     print(_buttonOn);
   }
   void _resetButtonPress() {
@@ -67,17 +69,26 @@ class StudyTimerState extends State<StudyTimer> {
     });
   }
 
+  String _makeStringTime(int sec) {
+    _hour = sec ~/ (60 * 60);
+    _minute = (sec - _hour * 60 * 60) ~/ 60;
+    _second = sec - _hour * 60 * 60 - _minute * 60;
+    var _time = DateTime(0, 0, 0, _hour, _minute, _second);
+    var _formatter = DateFormat('HH:mm:ss');
+    return _formatter.format(_time);
+  }
+
   void _onTimer(Timer timer) {
     _seconds++;
-    _hour = _seconds ~/ (60 * 60);
-    _minute = (_seconds - _hour * 60 * 60) ~/ 60;
-    _second = _seconds - _hour * 60 * 60 - _minute * 60;
-    var time = DateTime(0, 0, 0, _hour, _minute, _second);
-    var formatter = DateFormat('HH:mm:ss');
-    var formattedTime = formatter.format(time);
+    var _formattedTime = _makeStringTime(_seconds);
     setState(() {
-      countTimer = formattedTime;
+      countTimer = _formattedTime;
     });
+  }
+
+  String _dateTimeDifference(DateTime start, DateTime end) {
+    int diffSeconds = end.difference(start).inSeconds;
+    return _makeStringTime(diffSeconds);
   }
 
   Widget build(BuildContext context) {
@@ -178,17 +189,39 @@ class StudyTimerState extends State<StudyTimer> {
               const SizedBox(height: 10,),
 
               Container(
-                // color: Colors.red,
                 height: 150,
                 child: ListView.builder(
                   itemBuilder: (BuildContext context, int index) {
-                    if (dateTimeList.length >= index + 1){
-                      return Row(
-                        children: <Widget> [
-                          Text(DateFormat('HH時mm分ss秒').format(dateTimeList.elementAt(index).getNowDateTime())),
-                          const SizedBox(width: 5,),
-                          Text(dateTimeList.elementAt(index).getButtonOn() ? "開始" : "終了")
-                        ]
+                    if (dateTimeStartList.length >= index + 1){
+                      return Container(
+                        decoration: BoxDecoration(
+                          // border のカラーに制約がある。null系だと思うから「！」を付けたらOKだった！
+                          border: Border(bottom: BorderSide(width: 1.0, color: screenColor.baseColor!))
+                        ),
+                        child: Row(
+                          children: <Widget> [
+                            ConRap(DateFormat('HH:mm:ss').format(dateTimeStartList.elementAt(index).getNowDateTime()), 15),
+                      
+                            (dateTimeEndList.length >= index + 1) ?
+                            ConRap(DateFormat('HH:mm:ss').format(dateTimeEndList.elementAt(index).getNowDateTime()), 15) :
+                            ConRap('', 15),
+                      
+                            (dateTimeEndList.length >= index + 1) ?
+                            ConRap(
+                              _dateTimeDifference(
+                                dateTimeStartList.elementAt(index).getNowDateTime(),
+                                dateTimeEndList.elementAt(index).getNowDateTime()
+                              )
+                            , 20) : 
+                            ConRap(
+                              _dateTimeDifference(
+                                dateTimeStartList.elementAt(index).getNowDateTime(),
+                                DateTime.now()
+                              )
+                            , 20),
+                            // Text(dateTimeStartList.elementAt(index).getButtonOn() ? "開始" : "終了")
+                          ]
+                        ),
                       );
                     }
                   }
@@ -247,4 +280,17 @@ class ListViewRow {
   bool getButtonOn() {
     return _buttonOn;
   }
+}
+
+Widget ConRap(String text, double fontSize) {
+  return Container(
+    width: 100,
+    child: Text(
+      text,
+      // textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: fontSize
+      ),
+    ),
+  );
 }

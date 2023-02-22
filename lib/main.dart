@@ -38,7 +38,11 @@ class _MainPageState extends State<MainPage> {
         )
       ),
 
-      body: screenList.screenLists.elementAt(_currentIndex),
+      // body: screenList.screenLists.elementAt(_currentIndex),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: screenList.screenLists,
+      ),
 
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
